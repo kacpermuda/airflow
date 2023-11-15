@@ -29,6 +29,7 @@ from airflow.models import BaseOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook, BigQueryJob
 from airflow.providers.google.cloud.links.bigquery import BigQueryTableLink
 from airflow.providers.google.cloud.triggers.bigquery import BigQueryInsertJobTrigger
+from airflow.utils.helpers import merge_dicts
 
 if TYPE_CHECKING:
     from google.api_core.retry import Retry
@@ -139,6 +140,8 @@ class BigQueryToGCSOperator(BaseOperator):
         self.hook: BigQueryHook | None = None
         self.deferrable = deferrable
 
+        self._job_id: str = ""
+
     @staticmethod
     def _handle_job_error(job: BigQueryJob | UnknownJob) -> None:
         if job.error_result:
@@ -207,7 +210,7 @@ class BigQueryToGCSOperator(BaseOperator):
         self.hook = hook
 
         configuration = self._prepare_configuration()
-        job_id = hook.generate_job_id(
+        self._job_id = hook.generate_job_id(
             job_id=self.job_id,
             dag_id=self.dag_id,
             task_id=self.task_id,
@@ -219,14 +222,14 @@ class BigQueryToGCSOperator(BaseOperator):
         try:
             self.log.info("Executing: %s", configuration)
             job: BigQueryJob | UnknownJob = self._submit_job(
-                hook=hook, job_id=job_id, configuration=configuration
+                hook=hook, job_id=self._job_id, configuration=configuration
             )
         except Conflict:
             # If the job already exists retrieve it
             job = hook.get_job(
                 project_id=self.project_id,
                 location=self.location,
-                job_id=job_id,
+                job_id=self._job_id,
             )
             if job.state in self.reattach_states:
                 # We are reattaching to a job
@@ -235,7 +238,7 @@ class BigQueryToGCSOperator(BaseOperator):
             else:
                 # Same job configuration so we need force_rerun
                 raise AirflowException(
-                    f"Job with id: {job_id} already exists and is in {job.state} state. If you "
+                    f"Job with id: {self._job_id} already exists and is in {job.state} state. If you "
                     f"want to force rerun it consider setting `force_rerun=True`."
                     f"Or, if you want to reattach in this scenario add {job.state} to `reattach_states`"
                 )
@@ -255,7 +258,7 @@ class BigQueryToGCSOperator(BaseOperator):
                 timeout=self.execution_timeout,
                 trigger=BigQueryInsertJobTrigger(
                     conn_id=self.gcp_conn_id,
-                    job_id=job_id,
+                    job_id=self._job_id,
                     project_id=self.project_id or self.hook.project_id,
                 ),
                 method_name="execute_complete",
@@ -276,3 +279,66 @@ class BigQueryToGCSOperator(BaseOperator):
             self.task_id,
             event["message"],
         )
+
+    def get_openlineage_facets_on_complete(self, task_instance):
+        from pathlib import Path
+
+        from openlineage.client.facet import (
+            ExternalQueryRunFacet,
+            SymlinksDatasetFacet,
+            SymlinksDatasetFacetIdentifiers,
+        )
+        from openlineage.client.run import Dataset
+
+        from airflow.providers.google.cloud.hooks.gcs import _parse_gcs_url
+        from airflow.providers.google.cloud.utils.openlineage import (
+            get_facets_from_bq_table,
+            get_identity_column_lineage_facet_from_bq_table,
+        )
+        from airflow.providers.openlineage.extractors import OperatorLineage
+
+        table_object = self.hook.get_client(self.hook.project_id).get_table(self.source_project_dataset_table)
+
+        input_dataset = Dataset(
+            namespace="bigquery",
+            name=str(table_object.reference),
+            facets=get_facets_from_bq_table(table_object),
+        )
+
+        output_dataset_facets = {
+            "schema": input_dataset.facets["schema"],
+            "columnLineage": get_identity_column_lineage_facet_from_bq_table(table_object),
+        }
+        output_datasets = []
+        for uri in sorted(self.destination_cloud_storage_uris):
+            bucket, blob = _parse_gcs_url(uri)
+            additional_facets = {}
+
+            if "*" in blob:
+                # If wildcard ("*") is used in gcs path, we want the name of dataset to be directory name,
+                # but we create a symlink to the full object path with wildcard.
+                additional_facets = {
+                    "symlink": SymlinksDatasetFacet(
+                        identifiers=[
+                            SymlinksDatasetFacetIdentifiers(
+                                namespace=f"gs://{bucket}", name=blob, type="file"
+                            )
+                        ]
+                    ),
+                }
+                blob = Path(blob).parent.as_posix()
+
+            dataset = Dataset(
+                namespace=f"gs://{bucket}",
+                name=blob,
+                facets=merge_dicts(output_dataset_facets, additional_facets),
+            )
+            output_datasets.append(dataset)
+
+        run_facets = {}
+        if self._job_id:
+            run_facets = {
+                "externalQuery": ExternalQueryRunFacet(externalQueryId=self._job_id, source="bigquery"),
+            }
+
+        return OperatorLineage(inputs=[input_dataset], outputs=output_datasets, run_facets=run_facets)
