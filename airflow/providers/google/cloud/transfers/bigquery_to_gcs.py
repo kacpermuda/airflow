@@ -281,6 +281,7 @@ class BigQueryToGCSOperator(BaseOperator):
         )
 
     def get_openlineage_facets_on_complete(self, task_instance):
+        """Implementing on_complete as we will include final BQ job id."""
         from pathlib import Path
 
         from openlineage.client.facet import (
