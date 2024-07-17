@@ -19,10 +19,30 @@ from __future__ import annotations
 import itertools
 import os
 import re
+from unittest import mock
 
 import pytest
+from airflow import plugins_manager
+from airflow.providers.openlineage.plugins.openlineage import OpenLineageProviderPlugin
 
 REQUIRED_ENV_VARS = ("SYSTEM_TESTS_ENV_ID",)
+
+
+@pytest.fixture(autouse=True)
+def setup_openlineage():
+    with mock.patch.dict(
+        "os.environ",
+        {"AIRFLOW__OPENLINEAGE__TRANSPORT": '{"type": "airflow.providers.openlineage.transport.variable.VariableTransport"}'}
+        # {"AIRFLOW__OPENLINEAGE__TRANSPORT": '{"type": "console"}'}
+    ):
+    # with mock.patch.dict(
+    #     "os.environ",
+    #     AIRFLOW__OPENLINEAGE__TRANSPORT='{"type": "airflow.providers.openlineage.transport.variable.VariableTransport"}',
+    #     # AIRFLOW__OPENLINEAGE__TRANSPORT='{"type": "console"}',
+    # ):
+    #     plugins_manager.ensure_plugins_loaded()
+        plugins_manager.register_plugin(OpenLineageProviderPlugin())
+        yield
 
 
 @pytest.fixture

@@ -235,6 +235,9 @@ def register_plugin(plugin_instance):
     """
     global plugins
 
+    if not plugins:
+        plugins = []
+
     if plugin_instance.name in loaded_plugins:
         return
 

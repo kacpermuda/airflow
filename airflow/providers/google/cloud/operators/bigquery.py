@@ -1201,6 +1201,24 @@ class BigQueryGetDataOperator(GoogleCloudBaseOperator, _BigQueryOperatorsEncrypt
         self.log.info("Total extracted rows: %s", len(event["records"]))
         return event["records"]
 
+    def get_openlineage_facets_on_start(self):
+        from openlineage.client.run import Dataset
+
+        from airflow.providers.openlineage.extractors import OperatorLineage
+
+        if self.project_id is None:
+            self.project_id = BigQueryHook(
+                gcp_conn_id=self.gcp_conn_id,
+                impersonation_chain=self.impersonation_chain,
+                use_legacy_sql=self.use_legacy_sql,
+            ).project_id
+
+        return OperatorLineage(
+            inputs=[
+                Dataset(namespace="bigquery", name=f"{self.project_id}.{self.dataset_id}.{self.table_id}")
+            ]
+        )
+
 
 @deprecated(
     reason="This operator is deprecated. Please use `BigQueryInsertJobOperator`.",

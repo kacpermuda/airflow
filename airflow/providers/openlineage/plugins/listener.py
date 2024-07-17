@@ -82,6 +82,7 @@ class OpenLineageListener:
         self.log = logging.getLogger(__name__)
         self.extractor_manager = ExtractorManager()
         self.adapter = OpenLineageAdapter()
+        self.current_ti: TaskInstance | None = None
 
     @hookimpl
     def on_task_instance_running(
@@ -100,6 +101,7 @@ class OpenLineageListener:
             return
 
         self.log.debug("OpenLineage listener got notification about task instance start")
+        self.current_ti = task_instance
         dagrun = task_instance.dag_run
         task = task_instance.task
         if TYPE_CHECKING:
@@ -179,7 +181,7 @@ class OpenLineageListener:
         self, previous_state: TaskInstanceState, task_instance: TaskInstance, session: Session
     ) -> None:
         self.log.debug("OpenLineage listener got notification about task instance success")
-
+        self.current_ti = task_instance
         dagrun = task_instance.dag_run
         task = task_instance.task
         if TYPE_CHECKING:
@@ -273,7 +275,7 @@ class OpenLineageListener:
         error: None | str | BaseException = None,
     ) -> None:
         self.log.debug("OpenLineage listener got notification about task instance failure")
-
+        self.current_ti = task_instance
         dagrun = task_instance.dag_run
         task = task_instance.task
         if TYPE_CHECKING:
@@ -392,8 +394,9 @@ class OpenLineageListener:
     @hookimpl
     def before_stopping(self, component) -> None:
         self.log.debug("before_stopping: %s", component.__class__.__name__)
-        with timeout(30):
-            self.executor.shutdown(wait=True)
+        if self._executor:
+            with timeout(30):
+                self.executor.shutdown(wait=True)
 
     @hookimpl
     def on_dag_run_running(self, dag_run: DagRun, msg: str) -> None:
