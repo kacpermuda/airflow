@@ -18,14 +18,14 @@
 
 .. _supported_classes:openlineage:
 
-Supported operators
+Supported classes
 ===================
 
-Below is a list of Operators that support OpenLineage extraction, along with specific DB types that are compatible with the SQLExecuteQueryOperator.
+Below is a list of Operators and Hooks that support OpenLineage extraction, along with specific DB types that are compatible with the SQLExecuteQueryOperator.
 
 .. important::
 
-    While we strive to keep the list of supported operators current,
+    While we strive to keep the list of supported classes current,
     please be aware that our updating process is automated and may not always capture everything accurately.
 
 .. tip::
