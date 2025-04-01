@@ -497,7 +497,8 @@ def get_airflow_dag_run_facet(dag_run: DagRun) -> dict[str, RunFacet]:
         return {}
     return {
         "airflowDagRun": AirflowDagRunFacet(
-            dag=DagInfo(dag_run.dag),
+            # dag=DagInfo(dag_run.dag),
+            dag={"ol_version": "debug_DAG"},
             dagRun=DagRunInfo(dag_run),
         )
     }
@@ -546,7 +547,8 @@ def get_airflow_run_facet(
 ) -> dict[str, AirflowRunFacet]:
     return {
         "airflow": AirflowRunFacet(
-            dag=DagInfo(dag),
+            # dag=DagInfo(dag),
+            dag={"ol_version": "debug"},
             dagRun=DagRunInfo(dag_run),
             taskInstance=TaskInstanceInfo(task_instance),
             task=TaskInfoComplete(task) if conf.include_full_task_info() else TaskInfo(task),
