@@ -14,14 +14,23 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""
+Simple DAG without schedule and extra args, with one operator, to verify OpenLineage event integrity.
+
+It checks:
+    - required keys
+    - field formats and types
+    - number of task events (one start, one complete)
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import Path
 
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 
+from system.openlineage.expected_events import get_expected_event_file_path
 from system.openlineage.operator import OpenLineageTestOperator
 
 
@@ -29,18 +38,19 @@ def do_nothing():
     pass
 
 
-# Instantiate the DAG
+DAG_ID = "openlineage_basic_dag"
+
 with DAG(
-    "openlineage_basic_dag",
+    dag_id=DAG_ID,
     start_date=datetime(2021, 1, 1),
     schedule=None,
     catchup=False,
+    default_args={"retries": 0},
 ) as dag:
     nothing_task = PythonOperator(task_id="do_nothing_task", python_callable=do_nothing)
 
     check_events = OpenLineageTestOperator(
-        task_id="check_events",
-        file_path=str(Path(__file__).parent / "example_openlineage.json"),
+        task_id="check_events", file_path=get_expected_event_file_path(DAG_ID)
     )
 
     nothing_task >> check_events
