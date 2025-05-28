@@ -407,7 +407,7 @@ class DagRunInfo(InfoJsonEncodable):
     ]
 
     casts = {
-        "duration": lambda dagrun: DagRunInfo.duration(dagrun),
+        "duration": lambda dagrun: DagRunInfo.duration(dagrun), # TODO test
         "dag_bundle_name": lambda dagrun: DagRunInfo.dag_version_info(dagrun, "bundle_name"),
         "dag_bundle_version": lambda dagrun: DagRunInfo.dag_version_info(dagrun, "bundle_version"),
         "dag_version_id": lambda dagrun: DagRunInfo.dag_version_info(dagrun, "version_id"),
@@ -470,7 +470,7 @@ class TaskInfo(InfoJsonEncodable):
         "_is_teardown": "is_teardown",
     }
     includes = [
-        "deferrable",
+        "deferrable",  # TODO test with real deferrable
         "depends_on_past",
         "downstream_task_ids",
         "execution_timeout",
@@ -486,11 +486,11 @@ class TaskInfo(InfoJsonEncodable):
         "retries",
         "retry_exponential_backoff",
         "run_as_user",
-        "sla",
+        "sla", # Airflow 2
         "task_id",
-        "trigger_dag_id",
-        "external_dag_id",
-        "external_task_id",
+        "trigger_dag_id", # TODO test
+        "external_dag_id", # TODO test
+        "external_task_id", # TODO test
         "trigger_rule",
         "upstream_task_ids",
         "wait_for_downstream",
@@ -535,12 +535,12 @@ class TaskGroupInfo(InfoJsonEncodable):
         "_group_id": "group_id",
     }
     includes = [
-        "downstream_group_ids",
-        "downstream_task_ids",
+        "downstream_group_ids", # TODO test
+        "downstream_task_ids", # TODO test
         "prefix_group_id",
         "tooltip",
-        "upstream_group_ids",
-        "upstream_task_ids",
+        "upstream_group_ids", # TODO test
+        "upstream_task_ids", # TODO test
     ]
 
 

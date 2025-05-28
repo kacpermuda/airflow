@@ -12,7 +12,7 @@
                 "airflowDagRun": {
                     "dag": {
                         "dag_id": "openlineage_basic_dag",
-                        "fileloc": "{{ result.endswith('openlineage/openlineage_basic_dag.py') }}",
+                        "fileloc": "{{ result.endswith('openlineage/example_openlineage_basic_dag.py') }}",
                         "owner": "airflow",
                         "owner_links": {},
                         "start_date": "{{ is_datetime(result) }}",
@@ -24,7 +24,7 @@
                         "dag_id": "openlineage_basic_dag",
                         "data_interval_end": "{{ is_datetime(result) }}",
                         "data_interval_start": "{{ is_datetime(result) }}",
-                        "external_trigger": "{{ result == true or result == false }}",
+                        "external_trigger": "{{ result == true }}",
                         "logical_date": "{{ is_datetime(result) }}",
                         "run_id": "{{ result is string }}",
                         "run_type": "manual",
@@ -124,7 +124,7 @@
                 "airflow": {
                     "dag": {
                         "dag_id": "openlineage_basic_dag",
-                        "fileloc": "{{ result.endswith('openlineage/openlineage_basic_dag.py') }}",
+                        "fileloc": "{{ result.endswith('openlineage/example_openlineage_basic_dag.py') }}",
                         "owner": "airflow",
                         "owner_links": {},
                         "start_date": "{{ is_datetime(result) }}",
@@ -136,7 +136,7 @@
                         "dag_id": "openlineage_basic_dag",
                         "data_interval_end": "{{ is_datetime(result) }}",
                         "data_interval_start": "{{ is_datetime(result) }}",
-                        "external_trigger": "{{ result == true or result == false }}",
+                        "external_trigger": "{{ result == true }}",
                         "logical_date": "{{ is_datetime(result) }}",
                         "run_id": "{{ result is string }}",
                         "run_type": "manual",
@@ -253,7 +253,7 @@
                 "airflow": {
                     "dag": {
                         "dag_id": "openlineage_basic_dag",
-                        "fileloc": "{{ result.endswith('openlineage/openlineage_basic_dag.py') }}",
+                        "fileloc": "{{ result.endswith('openlineage/example_openlineage_basic_dag.py') }}",
                         "owner": "airflow",
                         "owner_links": {},
                         "start_date": "{{ is_datetime(result) }}",
@@ -265,7 +265,7 @@
                         "dag_id": "openlineage_basic_dag",
                         "data_interval_end": "{{ is_datetime(result) }}",
                         "data_interval_start": "{{ is_datetime(result) }}",
-                        "external_trigger": "{{ result == true or result == false }}",
+                        "external_trigger": "{{ result == true }}",
                         "logical_date": "{{ is_datetime(result) }}",
                         "run_id": "{{ result is string }}",
                         "run_type": "manual",

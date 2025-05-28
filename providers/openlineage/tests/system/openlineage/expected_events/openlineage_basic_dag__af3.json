@@ -12,7 +12,7 @@
                 "airflowDagRun": {
                     "dag": {
                         "dag_id": "openlineage_basic_dag",
-                        "fileloc": "{{ result.endswith('openlineage/openlineage_basic_dag.py') }}",
+                        "fileloc": "{{ result.endswith('openlineage/example_openlineage_basic_dag.py') }}",
                         "owner": "airflow",
                         "owner_links": {},
                         "start_date": "{{ is_datetime(result) }}",
@@ -125,7 +125,7 @@
                 "airflow": {
                     "dag": {
                         "dag_id": "openlineage_basic_dag",
-                        "fileloc": "{{ result.endswith('openlineage/openlineage_basic_dag.py') }}",
+                        "fileloc": "{{ result.endswith('openlineage/example_openlineage_basic_dag.py') }}",
                         "owner": "airflow",
                         "owner_links": {},
                         "start_date": "{{ is_datetime(result) }}",
@@ -250,7 +250,7 @@
                 "airflow": {
                     "dag": {
                         "dag_id": "openlineage_basic_dag",
-                        "fileloc": "{{ result.endswith('openlineage/openlineage_basic_dag.py') }}",
+                        "fileloc": "{{ result.endswith('openlineage/example_openlineage_basic_dag.py') }}",
                         "owner": "airflow",
                         "owner_links": {},
                         "start_date": "{{ is_datetime(result) }}",

@@ -24,6 +24,9 @@ from packaging.version import Version
 from airflow import __version__
 
 
+AIRFLOW_VERSION = Version(__version__)
+
+
 def get_expected_event_file_path(dag_id: str) -> str:
     """
     Retrieve the file path to the OpenLineage expected events JSON file for a given DAG ID,
@@ -55,12 +58,11 @@ def get_expected_event_file_path(dag_id: str) -> str:
     Raises:
         ValueError: If no expected event files matching the DAG ID and Airflow version are found.
     """
-    airflow_version = Version(__version__)
     base_path = Path(__file__).parent
 
     paths_to_check = (
-        str(base_path / f"{dag_id}__af{airflow_version.major}_{airflow_version.minor}.json"),
-        str(base_path / f"{dag_id}__af{airflow_version.major}.json"),
+        str(base_path / f"{dag_id}__af{AIRFLOW_VERSION.major}_{AIRFLOW_VERSION.minor}.json"),
+        str(base_path / f"{dag_id}__af{AIRFLOW_VERSION.major}.json"),
         str(base_path / f"{dag_id}.json"),
     )
 
