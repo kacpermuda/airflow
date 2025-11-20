@@ -327,6 +327,26 @@ class TriggerDagRunOperator(BaseOperator):
                     return
 
     def execute_complete(self, context: Context, event: tuple[str, dict[str, Any]]):
+        """
+        Handle task completion after returning from a deferral.
+
+        Args:
+            context: The Airflow context dictionary.
+            event: A tuple containing the class path of the trigger and the trigger event data.
+        """
+        # Example event content:
+        # (
+        #  "airflow.providers.standard.triggers.external_task.DagStateTrigger",
+        #  {
+        #   'dag_id': 'some_dag',
+        #   'states': ['success', 'failed'],
+        #   'poll_interval': 15,
+        #   'run_ids': ['manual__2025-11-19T17:49:20.907083+00:00'],
+        #   'execution_dates': [
+        #    DateTime(2025, 11, 19, 17, 49, 20, 907083, tzinfo=Timezone('UTC'))
+        #   ]
+        #  }
+        # )
         if AIRFLOW_V_3_0_PLUS:
             self._trigger_dag_run_af_3_execute_complete(event=event)
         else:
