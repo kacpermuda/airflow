@@ -439,4 +439,4 @@ def test_default_extractor_uses_wrong_operatorlineage_class():
     operator = OperatorWrongOperatorLineageClass(task_id="task_id")
     # If extractor returns lineage class that can't be changed into OperatorLineage, just return
     # empty OperatorLineage
-    assert ExtractorManager().extract_metadata(mock.MagicMock(), operator, None) == OperatorLineage()
+    assert ExtractorManager().extract_metadata(mock.MagicMock(), operator, None, None) == OperatorLineage()
