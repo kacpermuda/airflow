@@ -43,6 +43,22 @@ def get_provider_info():
                 "python-module": "airflow.providers.samba.transfers.gcs_to_samba",
             }
         ],
+        "asset-uris": [
+            {
+                "schemes": ["smb"],
+                "handler": "airflow.providers.samba.assets.samba.sanitize_uri",
+                "factory": "airflow.providers.samba.assets.samba.create_asset",
+                "to_openlineage_converter": "airflow.providers.samba.assets.samba.convert_asset_to_openlineage",
+            },
+        ],
+        "dataset-uris": [
+            {
+                "schemes": ["smb"],
+                "handler": "airflow.providers.samba.assets.samba.sanitize_uri",
+                "factory": "airflow.providers.samba.assets.samba.create_asset",
+                "to_openlineage_converter": "airflow.providers.samba.assets.samba.convert_asset_to_openlineage",
+            },
+        ],
         "connection-types": [
             {"hook-class-name": "airflow.providers.samba.hooks.samba.SambaHook", "connection-type": "samba"}
         ],

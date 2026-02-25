@@ -38,6 +38,22 @@ def get_provider_info():
         "hooks": [
             {"integration-name": "SQLite", "python-modules": ["airflow.providers.sqlite.hooks.sqlite"]}
         ],
+        "asset-uris": [
+            {
+                "schemes": ["sqlite"],
+                "handler": "airflow.providers.sqlite.assets.sqlite.sanitize_uri",
+                "factory": "airflow.providers.sqlite.assets.sqlite.create_asset",
+                "to_openlineage_converter": "airflow.providers.sqlite.assets.sqlite.convert_asset_to_openlineage",
+            },
+        ],
+        "dataset-uris": [
+            {
+                "schemes": ["sqlite"],
+                "handler": "airflow.providers.sqlite.assets.sqlite.sanitize_uri",
+                "factory": "airflow.providers.sqlite.assets.sqlite.create_asset",
+                "to_openlineage_converter": "airflow.providers.sqlite.assets.sqlite.convert_asset_to_openlineage",
+            },
+        ],
         "connection-types": [
             {
                 "hook-class-name": "airflow.providers.sqlite.hooks.sqlite.SqliteHook",

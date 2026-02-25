@@ -238,6 +238,28 @@ sensors:
     python-modules:
       - airflow.providers.microsoft.azure.sensors.msgraph
 
+asset-uris:
+  - schemes: [abfs, abfss, adl]
+    handler: airflow.providers.microsoft.azure.assets.adls.sanitize_uri
+    factory: airflow.providers.microsoft.azure.assets.adls.create_asset
+    to_openlineage_converter: airflow.providers.microsoft.azure.assets.adls.convert_asset_to_openlineage
+  - schemes: [wasb, wasbs]
+    handler: airflow.providers.microsoft.azure.assets.wasb.sanitize_uri
+    factory: airflow.providers.microsoft.azure.assets.wasb.create_asset
+    to_openlineage_converter: airflow.providers.microsoft.azure.assets.wasb.convert_asset_to_openlineage
+
+# dataset has been renamed to asset in Airflow 3.0
+# This is kept for backward compatibility.
+dataset-uris:
+  - schemes: [abfs, abfss, adl]
+    handler: airflow.providers.microsoft.azure.assets.adls.sanitize_uri
+    factory: airflow.providers.microsoft.azure.assets.adls.create_asset
+    to_openlineage_converter: airflow.providers.microsoft.azure.assets.adls.convert_asset_to_openlineage
+  - schemes: [wasb, wasbs]
+    handler: airflow.providers.microsoft.azure.assets.wasb.sanitize_uri
+    factory: airflow.providers.microsoft.azure.assets.wasb.create_asset
+    to_openlineage_converter: airflow.providers.microsoft.azure.assets.wasb.convert_asset_to_openlineage
+
 filesystems:
   - airflow.providers.microsoft.azure.fs.adls
   - airflow.providers.microsoft.azure.fs.msgraph

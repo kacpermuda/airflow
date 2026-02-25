@@ -21,7 +21,12 @@ import urllib.parse
 
 import pytest
 
-from airflow.providers.postgres.assets.postgres import sanitize_uri
+from airflow.providers.common.compat.assets import Asset
+from airflow.providers.postgres.assets.postgres import (
+    convert_asset_to_openlineage,
+    create_asset,
+    sanitize_uri,
+)
 
 
 @pytest.mark.parametrize(
@@ -69,3 +74,20 @@ def test_sanitize_uri_fail_non_port() -> None:
     uri_i = urllib.parse.urlsplit("postgres://example.com:abcd/database/schema/table")
     with pytest.raises(ValueError, match="Port could not be cast to integer value as 'abcd'"):
         sanitize_uri(uri_i)
+
+
+def test_create_asset() -> None:
+    result = create_asset(host="example.com", database="mydb", schema="public", table="users")
+    assert result == Asset(uri="postgres://example.com:5432/mydb/public/users")
+
+
+def test_create_asset_custom_port() -> None:
+    result = create_asset(host="example.com", port=5433, database="mydb", schema="public", table="users")
+    assert result == Asset(uri="postgres://example.com:5433/mydb/public/users")
+
+
+def test_convert_asset_to_openlineage() -> None:
+    asset = Asset(uri="postgres://example.com:5432/mydb/public/users")
+    ol_dataset = convert_asset_to_openlineage(asset=asset, lineage_context=None)
+    assert ol_dataset.namespace == "postgres://example.com:5432"
+    assert ol_dataset.name == "mydb.public.users"
