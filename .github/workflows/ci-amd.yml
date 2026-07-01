@@ -138,6 +138,7 @@ jobs:
       run-event-driven-e2e-tests: ${{ steps.selective-checks.outputs.run-event-driven-e2e-tests }}
       run-java-sdk-e2e-tests: ${{ steps.selective-checks.outputs.run-java-sdk-e2e-tests }}
       run-go-sdk-e2e-tests: ${{ steps.selective-checks.outputs.run-go-sdk-e2e-tests }}
+      run-openlineage-e2e-tests: ${{ steps.selective-checks.outputs.run-openlineage-e2e-tests }}
       run-system-tests: ${{ steps.selective-checks.outputs.run-system-tests }}
       run-task-sdk-tests: ${{ steps.selective-checks.outputs.run-task-sdk-tests }}
       run-task-sdk-integration-tests: ${{ steps.selective-checks.outputs.run-task-sdk-integration-tests }}
@@ -883,6 +884,40 @@ jobs:
       run-airflow-ctl-integration-tests: ${{ needs.build-info.outputs.run-airflow-ctl-integration-tests }}
     if: needs.build-info.outputs.prod-image-build == 'true'
 
+  openlineage-e2e-tests:
+    name: "OpenLineage e2e tests with PROD image"
+    needs: [build-info, build-prod-images, generate-constraints]
+    uses: ./.github/workflows/openlineage-e2e-tests.yml
+    with:
+      runners: ${{ needs.build-info.outputs.runner-type }}
+      platform: ${{ needs.build-info.outputs.platform }}
+      default-python-version: "${{ needs.build-info.outputs.default-python-version }}"
+      use-uv: ${{ needs.build-info.outputs.use-uv }}
+    if: >
+      needs.build-info.outputs.prod-image-build == 'true' &&
+      (needs.build-info.outputs.canary-run == 'true' ||
+      needs.build-info.outputs.run-openlineage-e2e-tests == 'true')
+
+  openlineage-e2e-compat-tests:
+    name: "OpenLineage e2e tests (Airflow ${{ matrix.compat.airflow-version }})"
+    needs: [build-info, build-prod-images, generate-constraints]
+    strategy:
+      fail-fast: false
+      matrix:
+        compat: ${{ fromJSON(needs.build-info.outputs.providers-compatibility-tests-matrix) }}
+    uses: ./.github/workflows/openlineage-e2e-tests.yml
+    with:
+      runners: ${{ needs.build-info.outputs.runner-type }}
+      platform: ${{ needs.build-info.outputs.platform }}
+      default-python-version: "${{ needs.build-info.outputs.default-python-version }}"
+      use-uv: ${{ needs.build-info.outputs.use-uv }}
+      airflow-version: ${{ matrix.compat.airflow-version }}
+    if: >
+      needs.build-info.outputs.prod-image-build == 'true' &&
+      startsWith(matrix.compat.airflow-version, '3.') &&
+      (needs.build-info.outputs.canary-run == 'true' ||
+      needs.build-info.outputs.run-openlineage-e2e-tests == 'true')
+
   tests-kubernetes:
     name: "Kubernetes tests"
     uses: ./.github/workflows/k8s-tests.yml
@@ -1054,6 +1089,8 @@ jobs:
     needs:
       - additional-ci-image-checks
       - additional-prod-image-tests
+      - openlineage-e2e-tests
+      - openlineage-e2e-compat-tests
       - basic-tests
       - build-info
       - build-prod-images
